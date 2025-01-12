@@ -10,7 +10,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 app = Flask(__name__)
 
 line_bot_api = LineBotApi('cMa+KNWK8VjVGrhHUFuadAfs+8fiwblbY5fTmBa3b2MIW7YUvXcMTOXfd/HbveMy0skcPSeGrb7YIYWkLmrxAzUWBG6uQ2HJtb1gayfIHkH7mJuH3Tsasu5IABgH0UUn+qZfqSxQY2d8Reu0kmO/qgdB04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler(''5b750f8f51ea241fe0a6579fdcf61ed5')
+handler = WebhookHandler('5b750f8f51ea241fe0a6579fdcf61ed5')
 
 # 查詢股票健康狀況的函數
 def get_stock_health(stock_code):
