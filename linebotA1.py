@@ -5,12 +5,12 @@ import yfinance as yf
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import MessageEvent, TextMessage, TextSendMessage, TemplateSendMessage, ButtonsTemplate, MessageTemplateAction
 
 app = Flask(__name__)
 
-line_bot_api = LineBotApi('mXE1BzBQ67nBGrZGbBO0TEWrT3xy9h3rpk4sz+PGeC00bwwc3yvWz9BEANYMNpm0MqpSk7xfmEh6l2KEy/KFEAduvGPm3m7A++Sxl3eJTiSzeQlzZJhxXfDoiyEdfGnsDern1toKbzLJdDe/IvtFpwdB04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler('7c7b7ddfcfa323b252f5f4d81a4bff1d')
+line_bot_api = LineBotApi(os.environ.get('mXE1BzBQ67nBGrZGbBO0TEWrT3xy9h3rpk4sz+PGeC00bwwc3yvWz9BEANYMNpm0MqpSk7xfmEh6l2KEy/KFEAduvGPm3m7A++Sxl3eJTiSzeQlzZJhxXfDoiyEdfGnsDern1toKbzLJdDe/IvtFpwdB04t89/1O/w1cDnyilFU='))
+handler = WebhookHandler(os.environ.get('7c7b7ddfcfa323b252f5f4d81a4bff1d'))
 
 # 查詢股票健康狀況的函數
 def get_stock_health(stock_code):
@@ -34,6 +34,23 @@ def get_stock_health(stock_code):
     else:
         return "Error fetching the stock health data."
 
+# 定義按鈕範本消息
+buttons_template_message = TemplateSendMessage(
+    alt_text='功能按鈕',
+    template=ButtonsTemplate(
+        thumbnail_image_url='https://example.com/image.jpg',  # 圖片網址，可選
+        title='選擇功能',
+        text='請選擇以下其中一項功能',
+        actions=[
+            MessageTemplateAction(
+                label='股票健檢',
+                text='股票健檢'
+            ),
+            # 您可以根據需求增加更多功能按鈕
+        ]
+    )
+)
+
 # Line Bot 的 Webhook 處理
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -50,8 +67,9 @@ def callback():
 def handle_message(event):
     user_input = event.message.text.strip()
 
-    # 假設股票代碼為 4 到 6 位數的字母或數字
-    if user_input.isalnum() and 4 <= len(user_input) <= 6:
+    if user_input == '股票健檢':
+        line_bot_api.reply_message(event.reply_token, buttons_template_message)
+    elif user_input.isalnum() and 4 <= len(user_input) <= 6:
         result = get_stock_health(user_input)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=result))
     else:
