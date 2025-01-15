@@ -22,7 +22,18 @@ def get_stock_health(stock_code):
             valuation = data['valuation']
             growth = data['growth']
             financials = data['financials']
-            return f"股票代碼 {stock_code} 的健康狀況：\n估值：{valuation}\n成長：{growth}\n財務狀況：{financials}"
+            technicals = data['technicals']
+            risk = data['risk']
+            competition = data['competition']
+            news = data['news']
+            return (f"股票代碼 {stock_code} 的健康狀況：\n"
+                    f"估值：{valuation}\n"
+                    f"成長：{growth}\n"
+                    f"財務狀況：{financials}\n"
+                    f"技術分析：{technicals}\n"
+                    f"風險評估：{risk}\n"
+                    f"競爭分析：{competition}\n"
+                    f"近期新聞和事件：{news}")
         else:
             return "Error fetching the stock health data."
     except requests.exceptions.Timeout:
