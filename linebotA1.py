@@ -14,7 +14,7 @@ handler = WebhookHandler('7c7b7ddfcfa323b252f5f4d81a4bff1d')
 
 # 查詢股票健康狀況的函數
 def get_stock_health(stock_code):
-    url = f'https://api.example.com/stock_health/{stock_code}'  # 假設這是一個可以查詢股票健康狀況的 API
+    url = f'https://api.render.com/deploy/srv-ctlahrpopnds7385761g?key=EXGJbp7r8jQ/{stock_code}'  # 假設這是一個可以查詢股票健康狀況的 API
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
