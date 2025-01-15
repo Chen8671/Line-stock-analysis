@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import yfinance as yf
 from flask import Flask, request, abort
