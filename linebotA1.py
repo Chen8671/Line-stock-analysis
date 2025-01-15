@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import requests
+import yfinance as yf
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -14,32 +14,25 @@ handler = WebhookHandler('7c7b7ddfcfa323b252f5f4d81a4bff1d')
 
 # 查詢股票健康狀況的函數
 def get_stock_health(stock_code):
-    url = f'https://api.render.com/deploy/srv-ctlahrpopnds7385761g?key=EXGJbp7r8jQ/{stock_code}'  # 假設這是一個可以查詢股票健康狀況的 API
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            valuation = data['valuation']
-            growth = data['growth']
-            financials = data['financials']
-            technicals = data['technicals']
-            risk = data['risk']
-            competition = data['competition']
-            news = data['news']
-            return (f"股票代碼 {stock_code} 的健康狀況：\n"
-                    f"估值：{valuation}\n"
-                    f"成長：{growth}\n"
-                    f"財務狀況：{financials}\n"
-                    f"技術分析：{technicals}\n"
-                    f"風險評估：{risk}\n"
-                    f"競爭分析：{competition}\n"
-                    f"近期新聞和事件：{news}")
-        else:
-            return "Error fetching the stock health data."
-    except requests.exceptions.Timeout:
-        return "Connection timed out."
-    except requests.exceptions.ConnectionError:
-        return "Connection error occurred."
+    stock = yf.Ticker(stock_code)
+    if stock.info:
+        valuation = stock.info.get('forwardPE', 'N/A')
+        growth = stock.info.get('earningsGrowth', 'N/A')
+        financials = stock.info.get('financialCurrency', 'N/A')
+        technicals = stock.info.get('fiftyDayAverage', 'N/A')
+        risk = stock.info.get('beta', 'N/A')
+        competition = 'N/A'  # Yahoo Finance doesn't provide competition info directly
+        news = 'N/A'  # For simplicity, not fetching news in this example
+        return (f"股票代碼 {stock_code} 的健康狀況：\n"
+                f"估值（前瞻市盈率）：{valuation}\n"
+                f"成長（收益成長）：{growth}\n"
+                f"財務狀況（財務貨幣）：{financials}\n"
+                f"技術分析（50 日均價）：{technicals}\n"
+                f"風險評估（Beta）：{risk}\n"
+                f"競爭分析：{competition}\n"
+                f"近期新聞和事件：{news}")
+    else:
+        return "Error fetching the stock health data."
 
 # Line Bot 的 Webhook 處理
 @app.route("/callback", methods=['POST'])
