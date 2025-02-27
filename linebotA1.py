@@ -8,8 +8,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage, TemplateS
 app = Flask(__name__)
 
 # 用正確的 CHANNEL_ACCESS_TOKEN 和 CHANNEL_SECRET 替換下面的字串
-line_bot_api = LineBotApi(os.environ.get('LINE_CHANNEL_ACCESS_TOKEN'))  # 假設環境變數有設置正確的 ACCESS TOKEN
-handler = WebhookHandler(os.environ.get('LINE_CHANNEL_SECRET'))  # 假設環境變數有設置正確的 SECRET
+line_bot_api = LineBotApi(os.environ.get('D9zBfnRl2A6H/Vvj+DH0CpyBLIjdLYHmgsVI+ndsHssd+dwUwy5gtyw3rvx4Cg4X0skcPSeGrb7YIYWkLmrxAzUWBG6uQ2HJtb1gayfIb7YIYWkLmrxAzUWBG6uQ2HJtb1gayfIb7YIYWkLmrxAzUWBG6uQ2HJtb1gayfImImFcDjm/HxIscx/MxMak/cxMMJIxMx/HxMakb/HxMakb/TgJ/HxNb/HxNb/HxNb2/HxM dB04t89/1O/w1cDnyilFU='))  # 假設環境變數有設置正確的 ACCESS TOKEN
+handler = WebhookHandler(os.environ.get('5b750f8f51ea241fe0a6579fdcf61ed5'))  # 假設環境變數有設置正確的 SECRET
 
 # 查詢股票健康狀況的函數
 def get_stock_health(stock_code):
