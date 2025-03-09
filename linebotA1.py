@@ -8,8 +8,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 app = Flask(__name__)
 
 # 使用硬編碼方式設置 LINE Bot 的 Access Token 和 Channel Secret
-line_bot_api = LineBotApi('mXE1BzBQ67nBGrZGbBO0TEWrT3xy9h3rpk4sz+PGeC00bwwc3yvWz9BEANYMNpm0MqpSk7xfmEh6l2KEy/KFEAduvGPm3m7A++Sxl3eJTiSzeQlzZJhxXfDoiyEdfGnsDern1toKbzLJdDe/IvtFpwdB04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler('7c7b7ddfcfa323b252f5f4d81a4bff1d')
+line_bot_api = LineBotApi('EriLCkSHz8vqv7gH6Y8PKMZTH9kd8zJLL1aQEy1jEoK/eNOo50Ly0gNAarUUfsod0skcPSeGrb7YIYWkLmrxAzUWBG6uQ2HJtb111yfIHk11KLmrx1KFylU​​UmU​​Umi11454FFFFyft 04t89/1O/w1cDnyilFU=')
+handler = WebhookHandler('5b750f8f51ea241fe0a6579fdcf61ed5')
 
 # 定義查詢股票健康狀況的函式
 def get_stock_health(stock_code):
