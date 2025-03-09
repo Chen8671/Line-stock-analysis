@@ -8,8 +8,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 app = Flask(__name__)
 
 # 從環境變數中取得 LINE bot 的 Access Token 和 Channel Secret
-line_access_token = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN')
-line_channel_secret = os.environ.get('LINE_CHANNEL_SECRET')
+line_access_token = os.environ.get('mXE1BzBQ67nBGrZGbBO0TEWrT3xy9h3rpk4sz+PGeC00bwwc3yvWz9BEANYMNpm0MqpSk7xfmEh6l2KEy/KFEAduvGPm3m7A++Sxl3eJTiSzeQlzZJhxXfDoiyEdfGnsDern1toKbzLJdDe/IvtFpwdB04t89/1O/w1cDnyilFU=')
+line_channel_secret = os.environ.get('7c7b7ddfcfa323b252f5f4d81a4bff1d')
 
 # 如果未設置 Access Token 或 Channel Secret，則拋出錯誤
 if not line_access_token or not line_channel_secret:
