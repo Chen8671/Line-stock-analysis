@@ -1,3 +1,5 @@
+import os
+import sqlite3
 import yfinance as yf
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
@@ -11,54 +13,108 @@ app = Flask(__name__)
 line_bot_api = LineBotApi('EriLCkSHz8vqv7gH6Y8PKMZTH9kd8zJLL1aQEy1jEoK/eNOo50Ly0gNAarUUfsod0skcPSeGrb7YIYWkLmrxAzUWBG6uQ2HJtb111yfIHk11KLmrx1KFylU​​UmU​​Umi11454FFFFyft 04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('5b750f8f51ea241fe0a6579fdcf61ed5')
 
-# 定義查詢股票健康狀況的函式
+# SQLite 數據庫文件路徑
+DB_FILE_PATH = 'stocks_data.db'
+
+# 初始化 SQLite 數據庫
+def initialize_database():
+    conn = sqlite3.connect(DB_FILE_PATH)
+    c = conn.cursor()
+    # 創建 stocks 表
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS stocks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        ticker TEXT NOT NULL, 
+        company_name TEXT, 
+        valuation REAL, 
+        risk REAL, 
+        date TEXT NOT NULL
+    )
+    ''')
+    conn.commit()
+    conn.close()
+    print("SQLite 資料庫初始化完成，表 'stocks' 已創建。")
+
+# 驗證股票代號格式的函式
+def validate_stock_code(stock_code):
+    if not stock_code.isalnum() and "." not in stock_code:
+        raise ValueError("股票代號格式不正確，請重新輸入（例如：2330 或 AAPL）。")
+
+# 查詢股票健康狀況的函式
 def get_stock_health(stock_code):
     try:
+        validate_stock_code(stock_code)  # 驗證股票代號格式
         stock = yf.Ticker(stock_code)  # 使用 yfinance 取得股票資訊
-        # 確保股票資訊非空
-        if stock.info and 'symbol' in stock.info:
+        if stock.info and 'symbol' in stock.info:  # 確保股票資訊非空
+            ticker = stock_code
+            company_name = stock.info.get('longName', 'N/A')
             valuation = stock.info.get('forwardPE', 'N/A')  # 取得估值（前瞻市盈率）
-            growth = stock.info.get('earningsGrowth', 'N/A')  # 取得成長率（收益成長）
-            financials = stock.info.get('financialCurrency', 'N/A')  # 財務貨幣
-            technicals = stock.info.get('fiftyDayAverage', 'N/A')  # 50 日均價
             risk = stock.info.get('beta', 'N/A')  # 風險評估（Beta 值）
-            competition = 'N/A'  # Yahoo 財經未提供競爭分析
-            news = 'N/A'  # 為簡化例子，未抓取新聞
-            return (f"股票代號 {stock_code} 的健康狀況：\n"
+
+            # 保存數據到資料庫
+            save_to_database(ticker, company_name, valuation, risk)
+
+            return (f"股票代號 {ticker} 的健康狀況：\n"
+                    f"公司名稱：{company_name}\n"
                     f"估值（前瞻市盈率）：{valuation}\n"
-                    f"成長（收益成長）：{growth}\n"
-                    f"財務狀況（財務貨幣）：{financials}\n"
-                    f"技術分析（50 日均價）：{technicals}\n"
-                    f"風險評估（Beta）：{risk}\n"
-                    f"競爭分析：{competition}\n"
-                    f"近期新聞和事件：{news}")
+                    f"風險評估（Beta）：{risk}")
         else:
             return "無法獲取股票健康資料，請檢查股票代號是否正確。"
     except Exception as e:
         return f"查詢股票時發生錯誤：{str(e)}"
 
+# 將股票資訊保存到 SQLite 資料庫
+def save_to_database(ticker, company_name, valuation, risk):
+    try:
+        conn = sqlite3.connect(DB_FILE_PATH)
+        cursor = conn.cursor()
+        # 插入股票資料
+        cursor.execute('''
+        INSERT INTO stocks (ticker, company_name, valuation, risk, date)
+        VALUES (?, ?, ?, ?, CURRENT_DATE)
+        ''', (ticker, company_name, valuation, risk))
+        conn.commit()
+        conn.close()
+        print(f"股票代號 {ticker} 的數據已成功保存到資料庫。")
+    except Exception as e:
+        print(f"保存股票資訊時發生錯誤：{str(e)}")
+
 # Line Bot 的 Webhook 處理
 @app.route("/callback", methods=['POST'])
 def callback():
-    signature = request.headers['X-Line-Signature']
-    body = request.get_data(as_text=True)
+    signature = request.headers.get('X-Line-Signature')
+    body = request.get_data(as_text=True, encoding='utf-8')  # 使用 UTF-8 編碼處理
     try:
-        handler.handle(body, signature)
+        handler.handle(body, signature)  # 驗證簽名並處理訊息
     except InvalidSignatureError:
-        abort(400)
+        print("無效的簽章錯誤")
+        abort(400)  # 返回 HTTP 400 狀態碼
+    except UnicodeEncodeError as e:
+        print(f"編碼錯誤：{str(e)}")
+        abort(500)  # 返回 HTTP 500 狀態碼
+    except Exception as e:
+        print(f"處理回調時發生未知錯誤：{str(e)}")
+        abort(500)  # 返回 HTTP 500 狀態碼
     return 'OK'
+
 # 處理使用者發送的文字訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_input = event.message.text.strip()  # 取得使用者輸入的訊息
 
-    # 處理股票代號邏輯
-    if "." not in user_input:  # 如果用戶未指定市場後綴
-        user_input += ".TW"  # 默認添加台灣市場代碼
+    # 判斷是否為股票代號
+    if user_input.isdigit() or "." in user_input:
+        # 如果是純數字，為台灣股票自動添加市場代碼
+        if "." not in user_input:
+            user_input += ".TW"  # 默認添加台灣市場代碼
+        result = get_stock_health(user_input)  # 查詢股票健康資料
+    else:
+        result = "無效的股票代號，請輸入正確的股票代號（例如：2330 或 AAPL）。"
 
-    result = get_stock_health(user_input)  # 查詢股票健康資料
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=result))  # 回應股票資訊
+    # 回應結果
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=result))
 
 # 啟動應用程式
 if __name__ == '__main__':
+    initialize_database()  # 初始化資料庫
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))  # 設置執行的主機及埠號
