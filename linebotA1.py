@@ -4,16 +4,22 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from dotenv import load_dotenv
+
+# 載入 .env 文件中的環境變數（僅在本地開發使用）
+load_dotenv()
 
 app = Flask(__name__)
 
 # 從環境變數中取得 LINE bot 的 Access Token 和 Channel Secret
-line_access_token = os.environ.get('mXE1BzBQ67nBGrZGbBO0TEWrT3xy9h3rpk4sz+PGeC00bwwc3yvWz9BEANYMNpm0MqpSk7xfmEh6l2KEy/KFEAduvGPm3m7A++Sxl3eJTiSzeQlzZJhxXfDoiyEdfGnsDern1toKbzLJdDe/IvtFpwdB04t89/1O/w1cDnyilFU=')
-line_channel_secret = os.environ.get('7c7b7ddfcfa323b252f5f4d81a4bff1d')
+line_access_token = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN')
+line_channel_secret = os.environ.get('LINE_CHANNEL_SECRET')
 
-# 如果未設置 Access Token 或 Channel Secret，則拋出錯誤
+# 檢查環境變數是否已正確設置，並打印調試資訊
 if not line_access_token or not line_channel_secret:
-    raise ValueError("LINE_CHANNEL_ACCESS_TOKEN 或 LINE_CHANNEL_SECRET 未正確設置")
+    print(f"LINE_CHANNEL_ACCESS_TOKEN: {line_access_token}")
+    print(f"LINE_CHANNEL_SECRET: {line_channel_secret}")
+    raise ValueError("LINE_CHANNEL_ACCESS_TOKEN 或 LINE_CHANNEL_SECRET 未正確設定")
 
 # 初始化 LineBotApi 和 WebhookHandler
 line_bot_api = LineBotApi(line_access_token)
@@ -47,12 +53,16 @@ def get_stock_health(stock_code):
 # 定義 Line Bot 的 Webhook 回調處理
 @app.route("/callback", methods=['POST'])
 def callback():
-    signature = request.headers['X-Line-Signature']  # 從請求頭中取得簽名
+    signature = request.headers.get('X-Line-Signature')  # 從請求頭中取得簽名
     body = request.get_data(as_text=True)  # 取得請求內容
     try:
         handler.handle(body, signature)  # 使用 WebhookHandler 驗證和處理
     except InvalidSignatureError:  # 如果簽名無效，返回錯誤
+        print("無效的簽名錯誤")
         abort(400)
+    except Exception as e:
+        print(f"處理回調時發生錯誤：{str(e)}")
+        abort(500)
     return 'OK'
 
 # 處理使用者發送的文字訊息
@@ -69,4 +79,5 @@ def handle_message(event):
 
 # 啟動應用程式
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))  # 設置應用程式執行的主機及埠號
+    port = int(os.environ.get('PORT', 5000))  # 設置埠號
+    app.run(host='0.0.0.0', port=port)  # 啟動 Flask 應用程式
