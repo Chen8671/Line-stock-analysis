@@ -37,21 +37,16 @@ def get_stock_health(stock_code):
     except Exception as e:
         return f"查詢股票時發生錯誤：{str(e)}"
 
-# 定義 Line Bot 的 Webhook 回調處理
+# Line Bot 的 Webhook 處理
 @app.route("/callback", methods=['POST'])
 def callback():
-    signature = request.headers.get('X-Line-Signature')  # 從請求頭中取得簽名
-    body = request.get_data(as_text=True)  # 取得請求內容
+    signature = request.headers['X-Line-Signature']
+    body = request.get_data(as_text=True)
     try:
-        handler.handle(body, signature)  # 使用 WebhookHandler 驗證和處理
-    except InvalidSignatureError:  # 如果簽名無效，返回錯誤
-        print("無效的簽名錯誤")
+        handler.handle(body, signature)
+    except InvalidSignatureError:
         abort(400)
-    except Exception as e:
-        print(f"處理回調時發生錯誤：{str(e)}")
-        abort(500)
     return 'OK'
-
 # 處理使用者發送的文字訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
