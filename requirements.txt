@@ -3,5 +3,4 @@ line-bot-sdk
 yfinance
 gunicorn
 python-dotenv
-pip install python-dotenv
 
