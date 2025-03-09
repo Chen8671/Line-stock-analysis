@@ -1,13 +1,13 @@
-import os
 import yfinance as yf
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
+# 初始化 Flask 應用
 app = Flask(__name__)
 
-# 使用硬編碼值初始化 LineBotApi 和 WebhookHandler
+# 使用硬編碼方式設置 LINE Bot 的 Access Token 和 Channel Secret
 line_bot_api = LineBotApi('mXE1BzBQ67nBGrZGbBO0TEWrT3xy9h3rpk4sz+PGeC00bwwc3yvWz9BEANYMNpm0MqpSk7xfmEh6l2KEy/KFEAduvGPm3m7A++Sxl3eJTiSzeQlzZJhxXfDoiyEdfGnsDern1toKbzLJdDe/IvtFpwdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('7c7b7ddfcfa323b252f5f4d81a4bff1d')
 
@@ -15,7 +15,8 @@ handler = WebhookHandler('7c7b7ddfcfa323b252f5f4d81a4bff1d')
 def get_stock_health(stock_code):
     try:
         stock = yf.Ticker(stock_code)  # 使用 yfinance 取得股票資訊
-        if stock.info:  # 如果成功取得資訊
+        # 確保股票資訊非空
+        if stock.info and 'symbol' in stock.info:
             valuation = stock.info.get('forwardPE', 'N/A')  # 取得估值（前瞻市盈率）
             growth = stock.info.get('earningsGrowth', 'N/A')  # 取得成長率（收益成長）
             financials = stock.info.get('financialCurrency', 'N/A')  # 財務貨幣
@@ -23,7 +24,7 @@ def get_stock_health(stock_code):
             risk = stock.info.get('beta', 'N/A')  # 風險評估（Beta 值）
             competition = 'N/A'  # Yahoo 財經未提供競爭分析
             news = 'N/A'  # 為簡化例子，未抓取新聞
-            return (f"股票代碼 {stock_code} 的健康狀況：\n"
+            return (f"股票代號 {stock_code} 的健康狀況：\n"
                     f"估值（前瞻市盈率）：{valuation}\n"
                     f"成長（收益成長）：{growth}\n"
                     f"財務狀況（財務貨幣）：{financials}\n"
@@ -32,7 +33,7 @@ def get_stock_health(stock_code):
                     f"競爭分析：{competition}\n"
                     f"近期新聞和事件：{news}")
         else:
-            return "無法獲取股票健康資料，請檢查股票代碼。"
+            return "無法獲取股票健康資料，請檢查股票代號是否正確。"
     except Exception as e:
         return f"查詢股票時發生錯誤：{str(e)}"
 
@@ -56,12 +57,12 @@ def callback():
 def handle_message(event):
     user_input = event.message.text.strip()  # 取得使用者輸入的訊息
 
-    # 調整檢查條件，允許股票代碼包含符號
-    if len(user_input) >= 4 and len(user_input) <= 6:  # 判斷輸入長度
-        result = get_stock_health(user_input)  # 查詢股票健康資料
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=result))  # 回應股票資訊
-    else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="請輸入有效的股票代碼（4 至 6 位數的字母或數字，或包含符號）。"))  # 提示無效輸入
+    # 處理股票代號邏輯
+    if "." not in user_input:  # 如果用戶未指定市場後綴
+        user_input += ".TW"  # 默認添加台灣市場代碼
+
+    result = get_stock_health(user_input)  # 查詢股票健康資料
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=result))  # 回應股票資訊
 
 # 啟動應用程式
 if __name__ == '__main__':
