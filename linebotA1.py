@@ -4,26 +4,12 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-from dotenv import load_dotenv
-
-# 載入 .env 文件中的環境變數（僅在本地開發使用）
-load_dotenv()
 
 app = Flask(__name__)
 
-# 從環境變數中取得 LINE bot 的 Access Token 和 Channel Secret
-line_access_token = os.environ.get('D9zBfnRl2A6H/Vvj+DH0CpyBLIjdLYHmgsVI+ndsHssd+dwUwy5gtyw3rvx4Cg4X0skcPSeGrb7YIYWkLmrxAzUWBG6uQ2HJtb1gayfIHkFcDjLxdDb+pxLbLc//i9xc/IsKnDXUAp1MMurIq3gmqQdB04t89/1O/w1cDnyilFU=')
-line_channel_secret = os.environ.get('5b750f8f51ea241fe0a6579fdcf61ed5')
-
-# 檢查環境變數是否已正確設置，並打印調試資訊
-if not line_access_token or not line_channel_secret:
-    print(f"LINE_CHANNEL_ACCESS_TOKEN: {line_access_token}")
-    print(f"LINE_CHANNEL_SECRET: {line_channel_secret}")
-    raise ValueError("LINE_CHANNEL_ACCESS_TOKEN 或 LINE_CHANNEL_SECRET 未正確設定")
-
-# 初始化 LineBotApi 和 WebhookHandler
-line_bot_api = LineBotApi(line_access_token)
-handler = WebhookHandler(line_channel_secret)
+# 使用硬編碼值初始化 LineBotApi 和 WebhookHandler
+line_bot_api = LineBotApi('mXE1BzBQ67nBGrZGbBO0TEWrT3xy9h3rpk4sz+PGeC00bwwc3yvWz9BEANYMNpm0MqpSk7xfmEh6l2KEy/KFEAduvGPm3m7A++Sxl3eJTiSzeQlzZJhxXfDoiyEdfGnsDern1toKbzLJdDe/IvtFpwdB04t89/1O/w1cDnyilFU=')
+handler = WebhookHandler('7c7b7ddfcfa323b252f5f4d81a4bff1d')
 
 # 定義查詢股票健康狀況的函式
 def get_stock_health(stock_code):
@@ -79,5 +65,4 @@ def handle_message(event):
 
 # 啟動應用程式
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # 設置埠號
-    app.run(host='0.0.0.0', port=port)  # 啟動 Flask 應用程式
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))  # 設置執行的主機及埠號
