@@ -10,8 +10,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 app = Flask(__name__)
 
 # 使用硬編碼方式設置 LINE Bot 的 Access Token 和 Channel Secret
-line_bot_api = LineBotApi('EriLCkSHz8vqv7gH6Y8PKMZTH9kd8zJLL1aQEy1jEoK/eNOo50Ly0gNAarUUfsod0skcPSeGrb7YIYWkLmrxAzUWBG6uQ2HJtb111yfIHk11KLmrx1KFylU​​UmU​​Umi11454FFFFyft 04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler('5b750f8f51ea241fe0a6579fdcf61ed5')
+line_bot_api = LineBotApi('T/EUr80xzlGCYpOUBsuORZdWpWwl/EYMxZRgnyorALxmo0xp5ti+2ELOII85fYQZ1bf/tNbOy3Y2T3GFPKBrOGsJd1dkQ8t2Rhkh5Fc9SSq1Jn/+dTZljEyGzEdUfoL1n0LsPdKagWWHk5ZEyd8aygdB04t89/1O/w1cDnyilFU=')
+handler = WebhookHandler('a2180e40b0a6c2ef14fde47b59650d60')
 
 # SQLite 數據庫文件路徑
 DB_FILE_PATH = 'stocks_data.db'
