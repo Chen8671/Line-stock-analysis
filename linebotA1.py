@@ -82,17 +82,12 @@ def save_to_database(ticker, company_name, valuation, risk):
 # Line Bot 的 Webhook 處理
 @app.route("/callback", methods=['POST'])
 def callback():
-    signature = request.headers.get('X-Line-Signature')  # 獲取簽名
-    body = request.get_data(as_text=True, encoding='utf-8')  # 確保使用 UTF-8 編碼
+    signature = request.headers['X-Line-Signature']
+    body = request.get_data(as_text=True)
     try:
-        handler.handle(body, signature)  # 處理簽章驗證與訊息
+        handler.handle(body, signature)
     except InvalidSignatureError:
-        print("無效的簽章錯誤")
-        abort(400)  # 返回 HTTP 400 錯誤
-    except Exception as e:
-        # 記錄錯誤詳細信息
-        print(f"處理回調時發生錯誤：{str(e)}")
-        abort(500)  # 返回 HTTP 500 錯誤
+        abort(400)
     return 'OK'
 
 # 處理使用者發送的文字訊息
